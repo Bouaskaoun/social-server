@@ -8,6 +8,8 @@ import helmet from "helmet";
 import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
+import authRoutes from "./routes/auth.js";
+import userRoutes from "./routes/users.js";
 import { register } from "./controllers/auth.js";
 
 /* Configuration */
@@ -26,24 +28,30 @@ app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 
 /* File Storage */
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, "public/assets");
-    },
-    filename: (req, file, cb) => {
-        cb(null, file.originalname);
-    },
+  destination: (req, file, cb) => {
+    cb(null, "public/assets");
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
 });
 const upload = multer({ storage: storage });
 
-/* Routes */
+/* Routes with Files */
 app.post("/auth/register", upload.single("picture"), register);
+
+/* Routes */
+app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
 
 /* Mongoose Setup */
 const PORT = process.env.PORT || 5000;
-mongoose.connect(process.env.MONGO_URL, {
+mongoose
+  .connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-}).then(() => {
+  })
+  .then(() => {
     app.listen(PORT, () => console.log(`Server Port : ${PORT}`));
-})
-.catch((error) => console.log(`${error} did not connect`));
+  })
+  .catch((error) => console.log(`${error} did not connect`));
